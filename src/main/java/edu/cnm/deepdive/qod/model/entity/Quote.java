@@ -6,8 +6,10 @@ import edu.cnm.deepdive.qod.view.FlatQuote;
 import edu.cnm.deepdive.qod.view.FlatSource;
 import java.net.URI;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.persistence.CascadeType;
@@ -34,7 +36,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Entity
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(value = {"created", "sources", "href"}, allowGetters = true, ignoreUnknown = true)
 @Component
 public class Quote implements FlatQuote {
 
@@ -57,13 +59,13 @@ public class Quote implements FlatQuote {
   @Column(length = 4096, nullable = false, unique = true)
   private String text;
 
-  @JsonSerialize(as = FlatSource.class)
+  @JsonSerialize(contentAs = FlatSource.class)
   @ManyToMany(fetch = FetchType.LAZY,
       cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
   @JoinTable(joinColumns = @JoinColumn(name = "quote_id"),
       inverseJoinColumns = @JoinColumn(name = "source_id"))
   @OrderBy("name ASC")
-  private List<Source> sources = new LinkedList<>();
+  private Set<Source> sources = new LinkedHashSet<>();
 
   public UUID getId() {
     return id;
@@ -81,7 +83,7 @@ public class Quote implements FlatQuote {
     this.text = text;
   }
 
-  public List<Source> getSources() {
+  public Set<Source> getSources() {
     return sources;
   }
 
